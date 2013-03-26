@@ -149,6 +149,8 @@ class TestCommander(Commander):
 		timeR = matchInfo.timeRemaining
 		timeP = matchInfo.timePassed
 		timeLeft = timeR/(timeR+timeP)
+		#number of bots on the team
+		totalBotNum = (.5*len(gameState.bots))/15.0
 		#percentage of friendly bots alive
 		totalBots = len(gameState.bots_alive)/(.5*len(gameState.bots))
 		#percentage of enemy bots seen
@@ -174,7 +176,8 @@ class TestCommander(Commander):
 				theirFlagDist,
                                 respawnTime,
 				timeToRespawn, 
-				timeLeft, 
+				timeLeft,
+                                totalBotNum,
 				totalBots, 
 				enemyNumber, 
 				scoreDiff]
