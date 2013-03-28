@@ -83,15 +83,67 @@ class TestCommander(Commander):
 		#print fv
 		
                 for bot in self.game.bots_available:
-                        if bot.flag:
-                        # if a bot has the flag run to the scoring location
-                                flagScoreLocation = self.game.team.flagScoreLocation
-                                self.issue(commands.Charge, bot, flagScoreLocation, description = 'Run to my flag')
-                        else:
-                        # otherwise run to where the flag is
-                                enemyFlag = self.game.enemyTeam.flag.position
-                                self.issue(commands.Charge, bot, enemyFlag, description = 'Run to enemy flag')
-			
+
+                        #output from neural net determines bot action
+                        botActionChoice = 0
+
+                        if botActionChoice == 0:
+                                if bot.flag:
+                                # go to score location
+                                        flagScoreLocation = self.game.team.flagScoreLocation
+                                        self.issue(commands.Charge, bot, flagScoreLocation, description = 'Run to my flag')
+                                else:
+                                # go to enemy flag location
+                                        enemyFlag = self.game.enemyTeam.flag.position
+                                        self.issue(commands.Charge, bot, enemyFlag, description = 'Run to enemy flag')
+                                        
+                        elif botActionChoice == 1:
+                                # attack nearest enemy
+                                nearestEnemyBot = None
+                                enBotPos = None
+                                nearestBotDist = 100000.0
+                                for enBot in bot.visibleEnemies:
+                                        if bot.position.distance(enBot.position) < nearestBotDist:
+                                                nearestEnemyBot = enBot
+                                                enBotPos = enBot.position
+                                                nearestBotDist = bot.position.distance(enBot.position)
+                                if nearestEnemyBot != None:
+                                        self.issue(commands.Attack, bot, enBotPos, enBotPos, description = 'Attack nearest enemy')
+                                        
+                        elif botActionChoice == 2:
+                                #charge nearest enemy
+                                nearestEnemyBot = None
+                                enBotPos = None
+                                nearestBotDist = 100000.0
+                                for enBot in bot.visibleEnemies:
+                                        if bot.position.distance(enBot.position) < nearestBotDist:
+                                                nearestEnemyBot = enBot
+                                                enBotPos = enBot.position
+                                                nearestBotDist = bot.position.distance(enBot.position)
+                                if nearestEnemyBot != None:
+                                        self.issue(commands.Charge, bot, nearestEnemyBot, enBotPos, description = 'Charge nearest enemy')
+
+                        elif botActionChoice == 3:       
+                        #defend current position
+                               self.issue(commands.Defend, None, description = 'Defend position')
+
+                        elif botActionChoice == 4:
+                        #defend flag
+                                flagPosition = myInfo.flag.position
+                                if bot.position.distance(flagPosition) > 2:
+                                        self.issue(commands.Attack, bot, flagPosition, flagPosition, description = 'Move to flag location')
+                                else:
+                                        self.issue(commands.Defend, None, description = 'Defend the flag')
+                                        
+
+                        elif botActionChoice == 5:
+                        #escort flag carrier
+                                pass
+                        elif botActionChoice == 6:
+                        #attack enemy flag carrier
+                                pass
+
+                                
 	def shutdown(self):
 		pass
 	
@@ -169,6 +221,34 @@ class TestCommander(Commander):
 		elif(enemyScore == myScore):
 			scoreDiff = .5
 
+                #density of moveable and visible area
+		mapStruct = lvlState.blockHeights
+		totalArea = lvlState.width * lvlState.height
+                moveDensity = 0.0
+                visibleDensity = 0.0
+		for row in mapStruct:
+                        for block in row:
+                                if block == 0:
+                                        moveDensity = moveDensity + 1
+                                        visibleDensity = visibleDensity + 1
+                                elif block < 3:
+                                        visibleDensity = visibleDensity + 1
+
+		moveDensity = moveDensity/totalArea
+		visibleDensity = visibleDensity/totalArea
+
+                #time until friendly flag despawns
+		if myInfo.flag.respawnTimer < 0:
+                        ourFlagDespawn = 0
+                else:
+                        ourFlagDespawn = myInfo.flag.respawnTimer/30.0
+		#time until enemy flag despawns
+		if enemyInfo.flag.respawnTimer < 0:
+                        enemyFlagDespawn = 0
+                else:
+                        enemyFlagDespawn = enemyInfo.flag.respawnTimer/30.0
+		
+		#Global feature vector for the game
 		featureVector = [
 				flagCarried, 
 				ourFlagCarried,
@@ -180,7 +260,11 @@ class TestCommander(Commander):
                                 totalBotNum,
 				totalBots, 
 				enemyNumber, 
-				scoreDiff]
+				scoreDiff,
+                                moveDensity,
+                                visibleDensity,
+                                ourFlagDespawn,
+                                enemyFlagDespawn]
 		return featureVector
 	
 	def getBotFeatureVectors(self):
