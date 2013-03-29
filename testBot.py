@@ -9,16 +9,6 @@ from api import commands
 # The maps for CTF are layed out along the X and Z axis in space, but can be
 # effectively be considered 2D.
 from api import Vector2
-#from array import array
-#from numpy import array
-
-from scipy import *
-from pybrain.rl.environments.mazes import Maze, MDPMazeTask
-from pybrain.rl.learners.valuebased import ActionValueTable
-from pybrain.rl.agents import LearningAgent
-from pybrain.rl.learners import Q, SARSA
-from pybrain.rl.experiments import Experiment
-from pybrain.rl.environments import Task
 
 class TestCommander(Commander):
 	"""Initial test commander for basic reinforcement learning"""
@@ -27,50 +17,36 @@ class TestCommander(Commander):
 	goalLoc = Vector2(0,0)
 	respawnTime = 0
 	maxRespawnTime = 45
-
+	moveDen = 0
+	sightDen = 0
+        normDistance = 0
+        
 	def initialize(self):
 		#grabs initial game state for the game
 		gameState = self.game
 		#grabs initial level state for the level
 		lvlState = self.level
 
-		#creates the binary representation of the map
-		structure = array(self.level.blockHeights)
-		for line in structure:
-			for element in range(len(line)):
-				if line[element] > 0:
-					line[element] = 1
+                #calculate normalization distance
+                d1 = lvlState.area[0]
+                d2 = lvlState.area[1]
+                self.normDistance = d1.distance(d2)
+                
+                #calculate visible and moveable areas on the map
+		mapStruct = lvlState.blockHeights
+		totalArea = lvlState.width * lvlState.height
+                moveDensity = 0.0
+                visibleDensity = 0.0
+		for row in mapStruct:
+                        for block in row:
+                                if block == 0:
+                                        moveDensity = moveDensity + 1
+                                        visibleDensity = visibleDensity + 1
+                                elif block < 3:
+                                        visibleDensity = visibleDensity + 1
 
-		nm = self.name
-
-		"""information from the game state"""
-		matchInfo = gameState.match
-		teamInfo = gameState.teams
-		myInfo = gameState.team
-		enemyInfo = gameState.enemyTeam
-		botInfo = gameState.bots
-		flagInfo = gameState.flags
-
-		aliveBots = gameState.bots_alive
-		availableBots = gameState.bots_available
-		holdingBots = gameState.bots_holding
-		enemyFlagInfo = gameState.enemyFlags
-		teamName = myInfo.name
-                self.respawnTime = matchInfo.timeToNextRespawn
-    
-		"""Initialize reinforcement learning"""
-		goalPoint = teamInfo[teamName].flagSpawnLocation
-		environment = Maze(structure, (goalPoint.x,goalPoint.y))
-		totalArea = lvlState.height * lvlState.width
-		controller = ActionValueTable(totalArea, 4)
-		controller.initialize(1.)
-		learner = Q()
-		agent = LearningAgent(controller, learner)
-		task = MDPMazeTask(environment)
-		experiment = Experiment(task, agent)
-		#experiment.doInteractions(1)
-		#agent.learn()
-		#agent.reset()
+		self.moveDen = moveDensity/totalArea
+		self.sightDen = visibleDensity/totalArea
 
 	def tick(self):
 
@@ -84,7 +60,7 @@ class TestCommander(Commander):
 		
                 for bot in self.game.bots_available:
 
-                        #output from neural net determines bot action
+                        #output from neural net determines bot action (note: other actions aren't tested yet)
                         botActionChoice = 0
 
                         if botActionChoice == 0:
@@ -222,21 +198,8 @@ class TestCommander(Commander):
 			scoreDiff = .5
 
                 #density of moveable and visible area
-		mapStruct = lvlState.blockHeights
-		totalArea = lvlState.width * lvlState.height
-                moveDensity = 0.0
-                visibleDensity = 0.0
-		for row in mapStruct:
-                        for block in row:
-                                if block == 0:
-                                        moveDensity = moveDensity + 1
-                                        visibleDensity = visibleDensity + 1
-                                elif block < 3:
-                                        visibleDensity = visibleDensity + 1
-
-		moveDensity = moveDensity/totalArea
-		visibleDensity = visibleDensity/totalArea
-
+                moveDensity = self.moveDen
+                visibleDensity = self.sightDen
                 #time until friendly flag despawns
 		if myInfo.flag.respawnTimer < 0:
                         ourFlagDespawn = 0
@@ -249,6 +212,7 @@ class TestCommander(Commander):
                         enemyFlagDespawn = enemyInfo.flag.respawnTimer/30.0
 		
 		#Global feature vector for the game
+
 		featureVector = [
 				flagCarried, 
 				ourFlagCarried,
@@ -266,7 +230,7 @@ class TestCommander(Commander):
                                 ourFlagDespawn,
                                 enemyFlagDespawn]
 		return featureVector
-	
+                
 	def getBotFeatureVectors(self):
                 """
                         Gets the feature vector for individual bots on the team
@@ -283,11 +247,8 @@ class TestCommander(Commander):
 		lvlState = self.level
 
 		#normalizing distance (farthest distance possible, 1 corner to the other)
-		#refactor to more global scope later (value does not change)
-		d1 = lvlState.area[0]
-                d2 = lvlState.area[1]
-                normDist = d1.distance(d2)
-                
+		normDist = self.normDistance
+
 		"""information from the game state"""
 		matchInfo = gameState.match
 		teamInfo = gameState.teams
@@ -371,5 +332,7 @@ class TestCommander(Commander):
                                 distToEnemySpawn]
 
                         fvDict[bot.name] = botFV
-                        
+                        print distToEnemyFC
+                        print distToFriendlyFC
+                        print distToNearestAlly
                 return fvDict
