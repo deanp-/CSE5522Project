@@ -332,7 +332,4 @@ class TestCommander(Commander):
                                 distToEnemySpawn]
 
                         fvDict[bot.name] = botFV
-                        print distToEnemyFC
-                        print distToFriendlyFC
-                        print distToNearestAlly
                 return fvDict
