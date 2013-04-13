@@ -61,7 +61,7 @@ class TestCommander(Commander):
                 for bot in self.game.bots_available:
 
                         #output from neural net determines bot action (note: other actions aren't tested yet)
-                        botActionChoice = 0
+                        botActionChoice = 6
 
                         if botActionChoice == 0:
                                 if bot.flag:
@@ -101,23 +101,32 @@ class TestCommander(Commander):
 
                         elif botActionChoice == 3:       
                         #defend current position
-                               self.issue(commands.Defend, None, description = 'Defend position')
+                               self.issue(commands.Defend, bot, description = 'Defend position')
 
                         elif botActionChoice == 4:
                         #defend flag
-                                flagPosition = myInfo.flag.position
+                                flagPosition = self.game.team.flag.position
                                 if bot.position.distance(flagPosition) > 2:
-                                        self.issue(commands.Attack, bot, flagPosition, flagPosition, description = 'Move to flag location')
+                                        self.issue(commands.Charge, bot, flagPosition, description = 'Move to flag location')
                                 else:
-                                        self.issue(commands.Defend, None, description = 'Defend the flag')
+                                        self.issue(commands.Defend, bot, description = 'Defend the flag')
                                         
 
                         elif botActionChoice == 5:
-                        #escort flag carrier
-                                pass
-                        elif botActionChoice == 6:
                         #attack enemy flag carrier
-                                pass
+                                flagPosition = self.game.team.flag.position
+				if self.game.team.flag.carrier != None:
+					self.issue(commands.Charge, bot, flagPosition, description = 'Attack Flag Carrier')
+
+			elif botActionChoice == 6:
+			#camp enemy spawn point
+				enSpawn = self.game.enemyTeam.botSpawnArea
+				enSpawn = enSpawn[0].midPoint(enSpawn[1])
+				if bot.position.distance(enSpawn) > 20:
+					self.issue(commands.Charge, bot, enSpawn, description = 'Run to enemy spawn')
+				else: 
+					self.issue(commands.Attack, bot, enSpawn, enSpawn, description = 'Attack Enemy Spawn')
+
 
                                 
 	def shutdown(self):
@@ -302,13 +311,6 @@ class TestCommander(Commander):
                                        if tDist < distToNearestAlly:
                                                distToNearestAlly = tDist
 
-                        """NOT WORKING, NOT INCLUDED IN VECTOR"""
-                        #distance to combat/ally support
-                        distToNearestCombat = 1
-                        for btBot in gameState.bots_holding:
-                                tDist = botPos.distance(btBot.position)/normDist
-                                if tDist < distToNearestCombat:
-                                        distanceToNearestCombat = tDist
 
                         #distance to friendly spawn zone
                         mySpawn = myInfo.botSpawnArea
