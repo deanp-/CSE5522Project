@@ -95,11 +95,12 @@ class TestCommander(Commander):
 			#output from neural net determines bot action (note: other actions aren't tested yet)
 			comboFv = list(self.fv + self.bfvs[bot.name])
 			comboFv = [float(i) for i in comboFv]
+			botActionChoice = random.randint(0,6);
 
-			if self.train == 1 and self.firstRun == False:
+		#	if self.train == 1 and self.firstRun == False:
 				#Update Neural Net by feeding last command bot did and updating error to match fitness change
 		#		lastBotCommand = self.priorFvs[bot.name]
-				botActionChoice = random.randint(0,6);
+		#		botActionChoice = random.randint(0,6);
 		#		delta = np.subtract(lastBotCommand[1],comboFv)
 		#		error = self.fitness(delta)
 		#		norm_error = (error - self.fitMinVal)/(self.fitMaxVal - self.fitMinVal)
@@ -108,10 +109,10 @@ class TestCommander(Commander):
 		#		activations = self.net.output_layer.activations()
 		#		target = activations
 		#		target[lastBotCommand[0]] = norm_error
-			elif self.train == 1:
-				botActionChoice = random.randint(0,6);
-			else:
-				pass
+		#	elif self.train == 1:
+		#		botActionChoice = random.randint(0,6);
+		#	else:
+		#		pass
 		#		self.net.input_layer.load_inputs(comboFv)
 		#		self.net._feed_forward()
 		#		activations = self.net.output_layer.activations()

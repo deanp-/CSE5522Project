@@ -12,8 +12,8 @@ from api import commands
 # effectively be considered 2D.
 from api import Vector2
 import random
-import time
 import threading
+import FileLock
 
 class TestCommander(Commander):
 	"""Initial test commander for basic reinforcement learning"""
@@ -42,6 +42,7 @@ class TestCommander(Commander):
 	priorFvs = {}
 	defRotate = [(Vector2(1,0),0.1),(Vector2(0,1),0.1),(Vector2(0,-1),0.1),(Vector2(-1,0),0.1)]
 	lock = threading.Lock()
+	fl = FileLock.FileLock(fileName)
 	
 	def initialize(self):
 		#grabs initial game state for the game
@@ -74,12 +75,8 @@ class TestCommander(Commander):
 	     	#self.net.randomize_network()
 	     	#self.net.set_learnrate(.1)
 	     	#self.net.save(self.fileName)
-
-	     	self.lock.acquire()
-	     	try:
+	     	with self.fl:
 	     		self.net.load(self.fileName)
-		finally:
-				self.lock.release()
 	     	self.fitMaxVal = self.fitness(self.fitMax)
 	     	self.fitMinVal = self.fitness(self.fitMin)
 
@@ -181,11 +178,8 @@ class TestCommander(Commander):
 	     
 	def shutdown(self):
 		if self.train == 1:
-			self.lock.acquire()
-			try:
+			with self.fl:
 				self.net.save(self.fileName)
-			finally:
-				self.lock.release()
 		
 	def fitness(self, comboFv):
 		fit = comboFv[0]*0.3        #flagCarried, 

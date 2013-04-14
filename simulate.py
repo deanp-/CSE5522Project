@@ -17,9 +17,8 @@ from aisbx import callstack
 
 from game.application import CaptureTheFlag
 
-
 # By default load these commanders.
-defaults = ['examples.BalancedCommander', 'testBot.TestCommander']
+defaults = ['testBot2.TestCommander', 'testBot.TestCommander']
 
 # Possible levels that can be used.
 levels = ['map00', 'map01', 'map02', 'map03', 'map10', 'map11', 'map12', 'map13',

@@ -850,7 +850,8 @@ class NeuralNet(object):
         """
 
         config = ConfigParser.ConfigParser()
-        config.readfp(open(filename))
+        fp = open(filename)
+        config.readfp(fp)
 
         hidden_neurons = config.get('net', 'hidden_neurons').split(",")
         hidden_neurons = [int(item) for item in hidden_neurons]
@@ -898,6 +899,7 @@ class NeuralNet(object):
 
         for layer_no in range(total_layers):
             layer = self.layers[layer_no]
+        fp.close()
 
     def output_values(self):
         """
@@ -927,8 +929,9 @@ class NeuralNet(object):
         #   Overall layer structure
         output += 'input_neurons = %s\n' % (
                 self.input_layer.total_nodes(NODE_INPUT))
-        output += 'hidden_neurons = %s\n' % (', '.join(
-                [str(layer.total_nodes()) for layer in self.layers[1:-1]]))
+        output += 'hidden_neurons = 17\n'
+        #output += 'hidden_neurons = %s\n' % (', '.join(
+        #        [str(layer.total_nodes()) for layer in self.layers[1:-1]]))
         output += 'output_neurons = %s\n' % (
             self.output_layer.total_nodes(NODE_OUTPUT))
 
