@@ -75,11 +75,11 @@ class TestCommander(Commander):
 	     	#self.net.set_learnrate(.1)
 	     	#self.net.save(self.fileName)
 
-	     	self.lock.acquire()
-	     	try:
-	     		self.net.load(self.fileName)
-		finally:
-				self.lock.release()
+	     	#self.lock.acquire()
+	     	#try:
+	     	#	self.net.load(self.fileName)
+		#finally:
+		#		self.lock.release()
 	     	self.fitMaxVal = self.fitness(self.fitMax)
 	     	self.fitMinVal = self.fitness(self.fitMin)
 
@@ -98,24 +98,25 @@ class TestCommander(Commander):
 
 			if self.train == 1 and self.firstRun == False:
 				#Update Neural Net by feeding last command bot did and updating error to match fitness change
-				lastBotCommand = self.priorFvs[bot.name]
+		#		lastBotCommand = self.priorFvs[bot.name]
 				botActionChoice = random.randint(0,6);
-				delta = np.subtract(lastBotCommand[1],comboFv)
-				error = self.fitness(delta)
-				norm_error = (error - self.fitMinVal)/(self.fitMaxVal - self.fitMinVal)
-				self.net.input_layer.load_inputs(comboFv)
-				self.net._feed_forward()
-				activations = self.net.output_layer.activations()
-				target = activations
-				target[lastBotCommand[0]] = norm_error
+		#		delta = np.subtract(lastBotCommand[1],comboFv)
+		#		error = self.fitness(delta)
+		#		norm_error = (error - self.fitMinVal)/(self.fitMaxVal - self.fitMinVal)
+		#		self.net.input_layer.load_inputs(comboFv)
+		#		self.net._feed_forward()
+		#		activations = self.net.output_layer.activations()
+		#		target = activations
+		#		target[lastBotCommand[0]] = norm_error
 			elif self.train == 1:
 				botActionChoice = random.randint(0,6);
 			else:
-				self.net.input_layer.load_inputs(comboFv)
-				self.net._feed_forward()
-				activations = self.net.output_layer.activations()
-				botActionChoice = activations.index(max(activations))
-			self.priorFvs[bot.name] = [botActionChoice, comboFv]
+				pass
+		#		self.net.input_layer.load_inputs(comboFv)
+		#		self.net._feed_forward()
+		#		activations = self.net.output_layer.activations()
+		#		botActionChoice = activations.index(max(activations))
+		#	self.priorFvs[bot.name] = [botActionChoice, comboFv]
 			
 			if botActionChoice == 0:
 				if bot.flag:
@@ -180,12 +181,13 @@ class TestCommander(Commander):
 		self.firstRun = False
 	     
 	def shutdown(self):
-		if self.train == 1:
-			self.lock.acquire()
-			try:
-				self.net.save(self.fileName)
-			finally:
-				self.lock.release()
+		pass
+	#	if self.train == 1:
+	#		self.lock.acquire()
+	#		try:
+	#			self.net.save(self.fileName)
+	#		finally:
+	#			self.lock.release()
 		
 	def fitness(self, comboFv):
 		fit = comboFv[0]*0.3        #flagCarried, 

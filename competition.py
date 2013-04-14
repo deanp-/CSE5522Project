@@ -11,6 +11,9 @@ import itertools
 from aisbx import platform, callstack
 from game import application
 
+import time
+import random
+
 def run(args):
     try:
         level, commanders = args
@@ -18,6 +21,8 @@ def run(args):
         runner = platform.ConsoleRunner()
         runner.accelerate()
         app = application.CaptureTheFlag(list(commanders), level, quiet = True, games = 1)
+        #t = random.randint(0,10)
+        #time.sleep(t)
         runner.run(app)
         sys.stderr.write('o')
         return level, app.scores
@@ -32,15 +37,16 @@ def run(args):
 
 
 if __name__ == '__main__':
-    p = Pool(processes = multiprocessing.cpu_count())
+    p = Pool(processes = 1)
 
     total = 0
     scores = {}
 
-    mycmd = 'mycmd.Placeholder'
-    competitors = ['examples.Greedy', 'examples.Balanced', 'examples.Random', 'examples.Defender']
+    mycmd = 'testBot.TestCommander'
+    #competitors = ['examples.Greedy', 'examples.Balanced', 'examples.Random', 'examples.Defender']
+    competitors = ['testBot2.TestCommander', 'testBot2.TestCommander']
     levels = ['map00', 'map01', 'map10', 'map11', 'map20', 'map30']
-
+    #levels = ['map00']
     pairs = itertools.product([mycmd], competitors)
     games = list(itertools.product(levels, pairs))
 
