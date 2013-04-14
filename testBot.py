@@ -29,7 +29,7 @@ class TestCommander(Commander):
 	bvSize = 10
 	outSize = 7
 	#shows up in sandbox files on linux atleast
-	fileName = "testWeights.txt"
+	fileName = "testWeightsFix.txt"
 	#toggle train and test
 	train = 1
 	#used fo tind the max or min fitnes values for normalization
@@ -71,7 +71,7 @@ class TestCommander(Commander):
 	     	self.net.init_layers(inputSize, [hiddenSize], self.outSize)
 	     	#self.net.randomize_network()
 	     	self.net.set_learnrate(.1)
-	     	self.net.save(self.fileName)
+	     	self.net.load(self.fileName)
 	     	self.fitMaxVal = self.fitness(self.fitMax)
 	     	self.fitMinVal = self.fitness(self.fitMin)
 
