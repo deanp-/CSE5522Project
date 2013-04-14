@@ -91,18 +91,17 @@ class TestCommander(Commander):
 			if self.train == 1 and self.firstRun == False:
 				#Update Neural Net by feeding last command bot did and updating error to match fitness change
 				lastBotCommand = self.priorFvs[bot.name]
-				botActionChoice = random.randint(0,6);
+				botActionChoice = random.randint(0,5);
 				delta = np.subtract(lastBotCommand[1],comboFv)
 				error = self.fitness(delta)
 				norm_error = (error - self.fitMinVal)/(self.fitMaxVal - self.fitMinVal)
-				print norm_error
 				self.net.input_layer.load_inputs(comboFv)
 				self.net._feed_forward()
 				activations = self.net.output_layer.activations()
 				target = activations
 				target[lastBotCommand[0]] = norm_error
 			elif self.train == 1:
-				botActionChoice = random.randint(0,6);
+				botActionChoice = random.randint(0,5);
 			else:
 				self.net.input_layer.load_inputs(comboFv)
 				self.net._feed_forward()
@@ -132,24 +131,24 @@ class TestCommander(Commander):
 				if nearestEnemyBot != None:
 					self.issue(commands.Attack, bot, enBotPos, enBotPos, description = 'Attack nearest enemy')        
 			elif botActionChoice == 2:
-               #charge nearest enemy
-			   nearestEnemyBot = None
-			   enBotPos = None
-			   nearestBotDist = 100000.0
-			   for enBot in bot.visibleEnemies:
+               			#charge nearest enemy
+				nearestEnemyBot = None
+				enBotPos = None
+				nearestBotDist = 100000.0
+				for enBot in bot.visibleEnemies:
 		   			if bot.position.distance(enBot.position) < nearestBotDist:
 			   			nearestEnemyBot = enBot
 			   			enBotPos = enBot.position
 			   			nearestBotDist = bot.position.distance(enBot.position)
-			   if nearestEnemyBot != None:
-		 			self.issue(commands.Charge, bot, nearestEnemyBot, enBotPos, description = 'Charge nearest enemy')
+				if nearestEnemyBot != None:
+		 			self.issue(commands.Charge, bot, enBotPos, description = 'Charge nearest enemy')
 
 			elif botActionChoice == 3:       
                               #defend current position
 			      self.issue(commands.Defend, bot, self.defRotate, description = 'Defend position')
 
 			elif botActionChoice == 4:
-                  #defend flag
+                  		#defend flag
 			      flagPosition = self.game.team.flag.position
 			      if bot.position.distance(flagPosition) > 2:
 				      self.issue(commands.Charge, bot, flagPosition, description = 'Move to flag location')
